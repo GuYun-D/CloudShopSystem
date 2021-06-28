@@ -39,9 +39,11 @@ module.exports = {
     before: require('./mock/mock-server.js')
     // 若配置代理
     // proxy: {
-    //   target: 'http: 202020.73874.89456.647',
-    //   pathRewrite: {
-    //     '^/dev-api': ''
+    //   '/dev-api': {
+    //     target: 'http:localhost:8081',
+    //     pathRewrite: {
+    //       '^/dev-api': ''
+    //     }
     //   }
     // }
   },
@@ -94,7 +96,7 @@ module.exports = {
             .plugin('ScriptExtHtmlWebpackPlugin')
             .after('html')
             .use('script-ext-html-webpack-plugin', [{
-            // `runtime` must same as runtimeChunk name. default is `runtime`
+              // `runtime` must same as runtimeChunk name. default is `runtime`
               inline: /runtime\..*\.js$/
             }])
             .end()

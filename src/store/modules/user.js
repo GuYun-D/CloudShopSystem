@@ -6,8 +6,8 @@ import { resetRouter } from '@/router'
 const getDefaultState = () => {
   return {
     token: getToken(), // 先从cookie中获取token，如果没有就去登录
-    name: '',
-    avatar: ''
+    name: '', // 获取用户信息后存储用户名字
+    avatar: '' // 获取用户头像
   }
 }
 
@@ -24,12 +24,9 @@ const mutations = {
     state.token = token
   },
   // 设置昵称
-  SET_NAME: (state, name) => {
-    state.name = name
-  },
-  // 设置头像
-  SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar
+  SET_INFO: (state, userInfo) => {
+    state.name = userInfo.name
+    state.avatar = userInfo.avatar
   }
 }
 
@@ -62,9 +59,7 @@ const actions = {
           return reject('Verification failed, please Login again.')
         }
 
-        const { name, avatar } = data
-        commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
+        commit('SET_INFO', data)
         resolve(data)
       }).catch(error => {
         reject(error)
