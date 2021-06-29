@@ -55,8 +55,44 @@ export const constantRoutes = [
     }]
   },
 
+  // 商品管理
+  {
+    path: '/product',
+    component: Layout,
+    redirect: '/trademark/list',
+    meta: { title: "商品管理", icon: 'el-icon-s-shop' },
+    children: [
+      {
+        path: '/trademark/list',
+        name: 'Trademark',
+        meta: { title: "品牌管理" },
+        component: () => import('@/views/product/tradeMark/List.vue')
+      }, {
+        path: '/attr/list',
+        name: 'Attr',
+        meta: { title: "属性管理" },
+        component: () => import('@/views/product/attr/List.vue')
+      },
+      {
+        path: '/spu/list',
+        name: 'Spu',
+        meta: { title: "spu管理" },
+        component: () => import('@/views/product/spu/List.vue')
+      },
+      {
+        path: '/sku/list',
+        name: 'Sku',
+        meta: { title: "sku管理" },
+        component: () => import('@/views/product/sku/List.vue')
+      }
+    ]
+  },
+
+
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
+
+
 ]
 
 const createRouter = () => new Router({
