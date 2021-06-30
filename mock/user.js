@@ -12,8 +12,8 @@ const users = {
   'admin-token': {
     roles: ['admin'],
     introduction: 'I am a super administrator',
-    avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
-    name: 'Super Admin'
+    avatar: 'https://sf6-ttcdn-tos.pstatp.com/img/user-avatar/42bfab3868bfdc3c93d74bf5892512d6~300x300.image',
+    name: 'GuYun-D'
   },
   'editor-token': {
     roles: ['editor'],

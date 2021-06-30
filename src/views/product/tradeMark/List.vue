@@ -1,6 +1,6 @@
 <template>
-  <div>
-    sku
+  <div class="trademark-container">
+    <el-button type="primary" icon="el-plus">添加</el-button>
   </div>
 </template>
 
@@ -10,6 +10,8 @@
   }
 </script>
 
-<style lang="sass" scoped>
-
+<style scoped>
+  .trademark-container{
+    margin: 20px;
+  }
 </style>
