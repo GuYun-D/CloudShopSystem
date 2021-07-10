@@ -36,11 +36,11 @@ module.exports = {
       warnings: false,
       errors: true
     },
-    before: require('./mock/mock-server.js')
+    before: require('./mock/mock-server.js'),
     // 若配置代理
     // proxy: {
     //   '/dev-api': {
-    //     target: 'http:localhost:8081',
+    //     target: 'http:localhost:3000',
     //     pathRewrite: {
     //       '^/dev-api': ''
     //     }
