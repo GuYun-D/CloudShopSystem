@@ -1,6 +1,8 @@
 <template>
   <div class="trademark-container">
-    <el-button type="primary" icon="el-plus">添加</el-button>
+    <el-button type="primary" icon="el-plus" @click="showAddDialog"
+      >添加</el-button
+    >
 
     <!-- 
       data: Array 
@@ -16,13 +18,23 @@
       <el-table-column label="品牌logo" width="width">
         <!-- row代表品牌对象 -->
         <template slot-scope="{ row, $index }">
-          <img :src="row.logoUrl" alt="" style="width: 100px" />
+          <img :src="row.imageUrl" alt="" style="width: 100px" />
         </template>
       </el-table-column>
       <el-table-column prop="prop" label="操作" width="width">
         <template slot-scope="row, $index">
-          <el-button icon="el-icon-edit" type="warning">修改</el-button>
-          <el-button icon="el-icon-delete" type="danger">删除</el-button>
+          <el-button
+            icon="el-icon-edit"
+            type="warning"
+            @click="showUpdataDialog(row)"
+            >修改</el-button
+          >
+          <el-button
+            icon="el-icon-delete"
+            type="danger"
+            @click="deleteTrademark(row)"
+            >删除</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -42,7 +54,10 @@
       title：对话框的标题
       :visible.sync：控制对话框的显示与隐藏
      -->
-    <el-dialog title="添加品牌" :visible.sync="dialogFormVisible">
+    <el-dialog
+      :title="tradeMarkForm.id ? '修改品牌' : '添加品牌'"
+      :visible.sync="dialogFormVisible"
+    >
       <!-- 
         el-form用来专门收集数据的 
         一般都会有一个属性:model="form"，指定收集的数据最后收集到那，是一个对象
@@ -74,15 +89,23 @@
         >
           <!-- 
             el-upload
+            action: 图片的上传接口，上传地址,如果设置了代理就要写上代理，否则不成功
+            :show-file-list：指定上传的是不是多个图片
+            :on-success：上传成功的回调
+            :before-upload：上传前的回调，这里是在判断图片的格式大小对不对
            -->
           <el-upload
             class="avatar-uploader"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            action="/dev-api/admin/product/fileUpload"
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
           >
-            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <img
+              v-if="tradeMarkForm.imageUrl"
+              :src="tradeMarkForm.imageUrl"
+              class="avatar"
+            />
             <i v-else class="el-icon-plus el-upload avatar-uploader-icon"></i>
             <div class="el-upload__tip" slot="tip">
               只能上传jpg/png文件，且不超过500kb
@@ -92,9 +115,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="addOrUpdata">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -110,16 +131,15 @@ export default {
       trademarkList: [],
       total: 0,
       // 控制对话框的显示与隐藏
-      dialogFormVisible: true,
+      dialogFormVisible: false,
       // 表单收集
       tradeMarkForm: {
         tradeName: "",
+        // 图片路径
+        imageUrl: "",
       },
       // 标题的宽度
       formLabelWidth: "100px",
-
-      // 图片路径
-      imageUrl: "",
     };
   },
   mounted() {
@@ -127,20 +147,104 @@ export default {
   },
 
   methods: {
+    // 删除操作
+    deleteTrademark(row) {
+      this.$confirm(
+        "此操作将永久删除" + row.row.tradeName + ", 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      )
+        // 点击确定的逻辑
+        .then(async () => {
+          try {
+            await this.$API.trademark.delete(row.row.id);
+            this.$message.success("删除成功")
+            /**
+             * 回到当前页，如果当前页只有一个数据，删除之后返回到前一页，如果不止一条数据，回到当前页
+             */
+            this.getTrademarkList(this.trademarkList.length > 1 ? this.page : this.page - 1)
+          } catch (error) {
+            this.$message.error("删除失败")
+          }
+        })
+        // 点击取消的逻辑
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
+    },
+
+    async addOrUpdata() {
+      // 获取收集到的参数数据
+      // 整理收集的参数数据
+      // 发请求
+      // 成功干啥
+      // 失败干啥
+      let trademark = this.tradeMarkForm;
+      try {
+        const result = await this.$API.trademark.addOrUpdata(trademark);
+        this.$message.success(trademark.id ? "修改品牌成功" : "添加品牌成功");
+        this.dialogFormVisible = false;
+        // 添加成功，默认展示第一页，修改成功默认展示当前页的数据
+        this.getTrademarkList(trademark.id ? this.page : 1);
+      } catch (error) {
+        this.$message.success(trademark.id ? "修改品牌失败" : "添加品牌失败");
+      }
+    },
+
+    // 点击修改按钮
+    showUpdataDialog(row) {
+      /**
+       * 出现的问题，直接使用了this.tradeMarkForm = row.row
+       * 修改所用的数据和外层表格的数据使用的是同一个数据，一旦对dialog表单数据进行修改，外层数据就跟着修改，即使点了取消，数据已经被修改了
+       */
+      this.dialogFormVisible = true;
+      // this.tradeMarkForm = row.row
+      // 拷贝数据
+      this.tradeMarkForm = {
+        ...row.row,
+      };
+    },
+    // 点击添加按钮
+    showAddDialog() {
+      this.dialogFormVisible = true;
+      this.tradeMarkForm = {
+        tradeName: "",
+        // 图片路径
+        imageUrl: "",
+      };
+    },
+
     // 两个上传相关的函数
     handleAvatarSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw);
+      // 上传成功之后，该路径是本地的路径，不是服务器的路径
+      // this.tradeMarkForm.imageUrl = URL.createObjectURL(file.raw);
+      /**
+       * res：上传成功后的包含的服务器的路径
+       * file：图片上传成功的文件信息
+       */
+      this.tradeMarkForm.imageUrl = res.data;
     },
     beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg";
+      const typeArr = ["image/jpeg", "image/png", "image/gif"];
+      const isJPGOrPngOrGIF = typeArr.includes(file.type);
+
       const isLt2M = file.size / 1024 / 1024 < 2;
 
-      if (!isJPG) {
-        this.$message.error("上传头像图片只能是 JPG 格式!");
+      if (!isJPGOrPngOrGIF) {
+        this.$message.error("上传头像图片只能是 JPG,PNG,GIF 格式!");
       }
       if (!isLt2M) {
         this.$message.error("上传头像图片大小不能超过 2MB!");
       }
+
+      // 返回true才能上传
       return isJPG && isLt2M;
     },
     // 处理修改每页数量的回调
@@ -163,27 +267,27 @@ export default {
         this.trademarkList = [
           {
             id: 1,
-            logoUrl: "/images/63c9a9bccd10201ac7edfe01679cbe6.jpg",
+            imageUrl: "/images/63c9a9bccd10201ac7edfe01679cbe6.jpg",
             tradeName: "华为",
           },
           {
             id: 2,
-            logoUrl: "/images/86a26cfbe2cfe7e8192435fa89f0eca.jpg",
+            imageUrl: "/images/86a26cfbe2cfe7e8192435fa89f0eca.jpg",
             tradeName: "OPPO",
           },
           {
             id: 3,
-            logoUrl: "/images/a49532e33ebe047b19472dea94cc4a0.jpg",
+            imageUrl: "/images/a49532e33ebe047b19472dea94cc4a0.jpg",
             tradeName: "苹果",
           },
           {
             id: 4,
-            logoUrl: "/images/a6a1724abf948e4257583c99f6b883d.jpg",
+            imageUrl: "/images/a6a1724abf948e4257583c99f6b883d.jpg",
             tradeName: "小米",
           },
           {
             id: 5,
-            logoUrl: "/images/bc821d5fecdade2a4a97eab252ec2c3.jpg",
+            imageUrl: "/images/bc821d5fecdade2a4a97eab252ec2c3.jpg",
             tradeName: "魅族",
           },
         ];
