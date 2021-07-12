@@ -61,8 +61,9 @@
       <!-- 
         el-form用来专门收集数据的 
         一般都会有一个属性:model="form"，指定收集的数据最后收集到那，是一个对象
+        rules表单验证规则对象
         -->
-      <el-form :model="tradeMarkForm">
+      <el-form :model="tradeMarkForm" :rules="rules" ref="trademarkForm">
         <!-- 
           el-form-item有几项数据就有几个
           label：该项表单标题
@@ -72,6 +73,7 @@
           style="width: 80%"
           label="品牌名称"
           :label-width="formLabelWidth"
+          prop="tradeName"
         >
           <!-- 
             el-input表单，收集到哪？el-form中的:model对象中
@@ -86,6 +88,7 @@
           style="width: 80%"
           label="品牌Logo"
           :label-width="formLabelWidth"
+          prop="imageUrl"
         >
           <!-- 
             el-upload
@@ -125,6 +128,19 @@
 export default {
   name: "trademark",
   data() {
+    let validateTrademarkForm = (rule, value, callback) => {
+      /**
+       * rule在这里是占位的，自定义校验没用，主要看value和cb
+       * value校验的数据
+       * cb：代表校验成功还是失败的回调，如果传入的是错误对象，说明验证失败，不传，证明成功
+       */
+      if(value.length < 2 || value.length > 10){
+        callback(new Error("错了哦！！！长度必须是2~10之间"))
+      }else{
+        callback()
+      }
+    }
+
     return {
       page: 1,
       limit: 3,
@@ -140,6 +156,27 @@ export default {
       },
       // 标题的宽度
       formLabelWidth: "100px",
+      // 表单验证规则对象
+      rules: {
+        /**
+         * 表单验证规则的名字要和表单里面的名字一样
+         * 需要将改名字通过el-form-item标签的prop传进去
+         触发时机：blur失去焦点；change输入框发生变化时；整体校验
+         */
+        tradeName: [
+          { required: true, message: "请输入品牌名称", trigger: "blur" },
+          // 自定义校验规则
+          // validator: 校验函数。校验函数写在data()里面，不是return里面
+          {
+            validator: validateTrademarkForm,
+            trigger: 'blur'
+          },
+        ],
+        imageUrl: [
+          // upload必须是整体校验时才会触发，这里的trigger随便写
+          { required: true, message: "请上传logo图片", trigger: "change" },
+        ],
+      },
     };
   },
   mounted() {
@@ -162,13 +199,15 @@ export default {
         .then(async () => {
           try {
             await this.$API.trademark.delete(row.row.id);
-            this.$message.success("删除成功")
+            this.$message.success("删除成功");
             /**
              * 回到当前页，如果当前页只有一个数据，删除之后返回到前一页，如果不止一条数据，回到当前页
              */
-            this.getTrademarkList(this.trademarkList.length > 1 ? this.page : this.page - 1)
+            this.getTrademarkList(
+              this.trademarkList.length > 1 ? this.page : this.page - 1
+            );
           } catch (error) {
-            this.$message.error("删除失败")
+            this.$message.error("删除失败");
           }
         })
         // 点击取消的逻辑
@@ -180,22 +219,35 @@ export default {
         });
     },
 
-    async addOrUpdata() {
-      // 获取收集到的参数数据
-      // 整理收集的参数数据
-      // 发请求
-      // 成功干啥
-      // 失败干啥
-      let trademark = this.tradeMarkForm;
-      try {
-        const result = await this.$API.trademark.addOrUpdata(trademark);
-        this.$message.success(trademark.id ? "修改品牌成功" : "添加品牌成功");
-        this.dialogFormVisible = false;
-        // 添加成功，默认展示第一页，修改成功默认展示当前页的数据
-        this.getTrademarkList(trademark.id ? this.page : 1);
-      } catch (error) {
-        this.$message.success(trademark.id ? "修改品牌失败" : "添加品牌失败");
-      }
+    addOrUpdata() {
+      // 表单先做整体校验
+      this.$refs.trademarkForm.validate(async (valid) => {
+        // 校验成功
+        if (valid) {
+          // 获取收集到的参数数据
+          // 整理收集的参数数据
+          // 发请求
+          // 成功干啥
+          // 失败干啥
+          let trademark = this.tradeMarkForm;
+          try {
+            const result = await this.$API.trademark.addOrUpdata(trademark);
+            this.$message.success(
+              trademark.id ? "修改品牌成功" : "添加品牌成功"
+            );
+            this.dialogFormVisible = false;
+            // 添加成功，默认展示第一页，修改成功默认展示当前页的数据
+            this.getTrademarkList(trademark.id ? this.page : 1);
+          } catch (error) {
+            this.$message.success(
+              trademark.id ? "修改品牌失败" : "添加品牌失败"
+            );
+          }
+        } else {
+          console.log("表单校验失败");
+          return false;
+        }
+      });
     },
 
     // 点击修改按钮
