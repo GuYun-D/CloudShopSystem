@@ -17,12 +17,12 @@
       </el-table-column>
       <el-table-column label="品牌logo" width="width">
         <!-- row代表品牌对象 -->
-        <template slot-scope="{ row, $index }">
+        <template slot-scope="row">
           <img :src="row.imageUrl" alt="" style="width: 100px" />
         </template>
       </el-table-column>
       <el-table-column prop="prop" label="操作" width="width">
-        <template slot-scope="row, $index">
+        <template slot-scope="row">
           <el-button
             icon="el-icon-edit"
             type="warning"
@@ -134,12 +134,12 @@ export default {
        * value校验的数据
        * cb：代表校验成功还是失败的回调，如果传入的是错误对象，说明验证失败，不传，证明成功
        */
-      if(value.length < 2 || value.length > 10){
-        callback(new Error("错了哦！！！长度必须是2~10之间"))
-      }else{
-        callback()
+      if (value.length < 2 || value.length > 10) {
+        callback(new Error("错了哦！！！长度必须是2~10之间"));
+      } else {
+        callback();
       }
-    }
+    };
 
     return {
       page: 1,
@@ -169,7 +169,7 @@ export default {
           // validator: 校验函数。校验函数写在data()里面，不是return里面
           {
             validator: validateTrademarkForm,
-            trigger: 'blur'
+            trigger: "blur",
           },
         ],
         imageUrl: [
