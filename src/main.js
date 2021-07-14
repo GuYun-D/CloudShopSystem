@@ -26,6 +26,13 @@ import * as API from '@/api'
  */
 
 /**
+ * 全局注册三级选择器
+ * 因为有多个地方用到，所以全局注册
+ */
+import CategorySelector from '@/components/CategorySelector'
+Vue.component('CategorySelector', CategorySelector)
+
+/**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
  * you can execute: mockXHR()

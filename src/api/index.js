@@ -21,4 +21,6 @@
  * 在引入的时候，此文件暴漏的就是{trademark, attr, spu, sku}
  */
 export {default as trademark} from './product/tradeMark'
+export {default as attr} from './product/attr'
+export {default as category} from './product/category'
 
