@@ -100,14 +100,19 @@
           <el-table-column label="属性值名称">
             <template slot-scope="{ row, $index }">
               <!-- @keyup.enter必须要变成原生的事件，否则无法处理 -->
+              <!-- 
+                这里的input是多个的，获取单个input的话，就需要动态的设置ref，如果写死，获取到的就是全部的
+               -->
               <el-input
+              :ref="$index"
                 v-if="row.isEdit"
                 v-model="row.valueName"
                 placeholder="请输入属性值名称"
                 @blur="toLook(row)"
                 @keyup.enter.native="toLook(row)"
+                size="mini"
               ></el-input>
-              <div @click="toEdit(row)" v-else>{{ row.valueName }}</div>
+              <div @click="toEdit(row, $index)" v-else>{{ row.valueName }}</div>
             </template>
           </el-table-column>
           <el-table-column label="操作" prop="">
@@ -179,8 +184,24 @@ export default {
   },
   methods: {
     // 点击span
-    toEdit(row) {
+    toEdit(row, index) {
       row.isEdit = true;
+
+      // 自动聚焦表单,这个index刚好对应着对应的文本框
+      // 不能用点了，变量使用中括号
+      // this.$refs[index] 获取的是undefined，因为我们获取这个节点太快了，上面我们把row.isEdit = true之后，
+      // 由于dom是通过vif，才开始创建，紧接着你又获取这个元素，此时，这个元素还没有创建
+      // $nextTick(),在页面的最近一次更新完成之后，调用回调
+      // this.$refs[index].focus()
+      this.$nextTick(() => {
+        this.$refs[index].focus()
+      })
+
+      /**
+       * this.nextTick和updated(生命周期函数)的区别
+       * this.nextTick，页面的最近一次更新后执行回调，一次就完了
+       * updated是只要页面数据更新就会执行
+       */
     },
 
     // 切换查看模式,input的blur和回车事件
@@ -266,6 +287,13 @@ export default {
         // 添加属性值的时候添加编辑模式
         isEdit: true,
       });
+
+      // 输入框自动聚焦，新添加属性值，自动获取焦点
+      // 新添加的属性值，这个输入框肯定存在于属性值列表的最后一个
+      this.$nextTick(() => {
+        this.$refs[this.attrForm.attrValueList.length - 1].focus()
+      })
+
     },
 
     changeCategory({ categoryId, level }) {
