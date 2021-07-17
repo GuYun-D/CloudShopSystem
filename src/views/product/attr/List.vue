@@ -52,14 +52,16 @@
                 ></el-button>
               </el-tooltip>
 
-              <el-tooltip
-                class="item"
-                effect="dark"
-                content="删除"
-                placement="top-start"
+              <el-popconfirm
+                @onConfirm="deleteAttr(row)"
+                :title="`你确定要删除${row.attrName}吗`"
               >
-                <el-button type="danger" icon="el-icon-delete"></el-button>
-              </el-tooltip>
+                <el-button
+                  slot="reference"
+                  type="danger"
+                  icon="el-icon-delete"
+                ></el-button>
+              </el-popconfirm>
             </template>
           </el-table-column>
         </el-table>
@@ -83,7 +85,7 @@
           @click="addAttrValue"
           >添加属性值</el-button
         >
-        <el-button type="info">取消</el-button>
+        <el-button type="info" @click="isShowList = true">取消</el-button>
 
         <el-table
           :data="attrForm.attrValueList"
@@ -104,7 +106,7 @@
                 这里的input是多个的，获取单个input的话，就需要动态的设置ref，如果写死，获取到的就是全部的
                -->
               <el-input
-              :ref="$index"
+                :ref="$index"
                 v-if="row.isEdit"
                 v-model="row.valueName"
                 placeholder="请输入属性值名称"
@@ -116,19 +118,27 @@
             </template>
           </el-table-column>
           <el-table-column label="操作" prop="">
-            <template>
-              <el-tooltip content="删除" placement="top" effect="dark">
+            <template slot-scope="{ row, $index }">
+              <!-- 
+                使用气泡确认框，button里面必须要写slot，
+                slot
+                这里触发之后，会触发两个事件onConfirm点击了确定的事件
+              -->
+              <el-popconfirm
+                @onConfirm="attrForm.attrValueList.splice($index, 1)"
+                :title="`你确定要删除${row.valueName}吗`"
+              >
                 <el-button
                   type="danger"
-                  size="default"
                   icon="el-icon-delete"
+                  slot="reference"
                 ></el-button>
-              </el-tooltip>
+              </el-popconfirm>
             </template>
           </el-table-column>
         </el-table>
 
-        <el-button type="primary">保存</el-button>
+        <el-button :disabled="attrForm.attrValueList.length === 0 ? true : false" type="primary" @click="save">保存</el-button>
         <el-button @click="isShowList = true">取消</el-button>
       </div>
     </el-card>
@@ -183,6 +193,48 @@ export default {
     };
   },
   methods: {
+    // 删除品牌
+    async deleteAttr(row) {
+      try {
+        await this.$API.attr.delete(row.id);
+        this.$message.success('删除成功')
+        this.getList()
+      } catch (error) {
+        this.$message.error("删除失败")
+      }
+    },
+
+    // 点击保存
+    async save() {
+      // 获取收集的参数
+      let attr = this.attrForm;
+      // 整理参数
+      // 1.如果属性值当中有空串，去掉
+      // 2.请求的时候把不需要的数据剔除掉，如我们加进去的isEdit
+      attr.attrValueList = attr.attrValueList.filter((item) => {
+        if (item.valueName !== "") {
+          // 过滤，若属性对象的属性名称不为空串，
+          delete item.isEdit;
+          return true;
+        }
+      });
+
+      // 3.当属性当中属性值列表是空的时候，代表无值，不发送请求
+      if (attr.attrValueList.length === 0) return;
+
+      // 发送请求
+      try {
+        await this.$API.attr.addOrUpdata(attr);
+        // 成功干啥
+        this.$message.success("保存成功");
+        this.isShowList = true;
+        this.getattrValueList();
+      } catch (error) {
+        // 失败干啥
+        this.$message.error("添加或者修改失败");
+      }
+    },
+
     // 点击span
     toEdit(row, index) {
       row.isEdit = true;
@@ -194,8 +246,8 @@ export default {
       // $nextTick(),在页面的最近一次更新完成之后，调用回调
       // this.$refs[index].focus()
       this.$nextTick(() => {
-        this.$refs[index].focus()
-      })
+        this.$refs[index].focus();
+      });
 
       /**
        * this.nextTick和updated(生命周期函数)的区别
@@ -291,9 +343,8 @@ export default {
       // 输入框自动聚焦，新添加属性值，自动获取焦点
       // 新添加的属性值，这个输入框肯定存在于属性值列表的最后一个
       this.$nextTick(() => {
-        this.$refs[this.attrForm.attrValueList.length - 1].focus()
-      })
-
+        this.$refs[this.attrForm.attrValueList.length - 1].focus();
+      });
     },
 
     changeCategory({ categoryId, level }) {
