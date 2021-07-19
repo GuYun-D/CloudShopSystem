@@ -4,7 +4,7 @@
       行内表单
       :inline="true"：输入框标题以及输入框之间横向排列
      -->
-    <el-form :inline="true" :model="formInline" class="demo-form-inline">
+    <el-form :inline="true" :disabled="!isShowList" :model="formInline" class="demo-form-inline">
       <el-form-item label="一级分类">
         <!-- 选中哪一项，最终我们收集的是分类的id,选中哪一个是存在option的value属性中的 -->
         <!-- el-select上有一个change事件，选项发生变化时触发，默认的参数就是选中的那个值 -->
@@ -56,6 +56,7 @@
 <script>
 export default {
   name: "",
+  props: ['isShowList'],
   data() {
     return {
       formInline: {

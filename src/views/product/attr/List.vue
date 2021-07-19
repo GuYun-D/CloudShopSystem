@@ -1,7 +1,7 @@
 <template>
   <div class="attr-container">
     <el-card>
-      <CategorySelector @changeCategory="changeCategory"></CategorySelector>
+      <CategorySelector :isShowList="isShowList" @changeCategory="changeCategory"></CategorySelector>
     </el-card>
     <el-card style="margin-top: 20px">
       <!-- 列表页数据 -->
