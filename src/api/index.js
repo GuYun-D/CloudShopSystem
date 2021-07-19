@@ -23,4 +23,5 @@
 export {default as trademark} from './product/tradeMark'
 export {default as attr} from './product/attr'
 export {default as category} from './product/category'
+export {default as spu } from './product/spu'
 
