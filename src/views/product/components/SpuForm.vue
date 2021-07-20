@@ -41,14 +41,18 @@
       </el-form-item>
 
       <el-form-item label="销售属性" size="normal">
-        <el-select style="margin-right: 10px;" v-model="spuSaleAttrId" placeholder="选择">
-          <el-option> </el-option>
+        <el-select
+          style="margin-right: 10px"
+          v-model="spuSaleAttrId"
+          placeholder="选择"
+        >
+          <el-option value=""> </el-option>
         </el-select>
         <el-button type="primary" size="default" icon="el-icon-plus"
           >添加销售属性</el-button
         >
 
-        <el-table border="true" style="margin: 20px 0">
+        <el-table border style="margin: 20px 0">
           <el-table-column
             width="80"
             label="序号"
@@ -60,8 +64,8 @@
           <el-table-column label="操作" width="150"></el-table-column>
         </el-table>
 
-        <el-button type="primary" size="default" @click="">保存</el-button>
-        <el-button size="default" @click="">取消</el-button>
+        <el-button type="primary" size="default">保存</el-button>
+        <el-button size="default" @click="$emit('update:visible', false)">取消</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -73,6 +77,8 @@ export default {
   data() {
     return {
       spuForm: {
+        // 此对象是为了在添加时收集数据用的
+        // 如果是修改spu
         spuName: "",
         category3Id: "",
         description: "",
@@ -85,6 +91,15 @@ export default {
 
       //
       spuSaleAttrId: "",
+
+      // 将获取到图片列表先单独保存，最后再整合到spuForm中去
+      spuImageList: [],
+
+      // 获取所有的品牌列表
+      trademarkList: [],
+
+      // 获取所有的spu销售属性
+      baseSalseAttrList: [],
     };
   },
 
@@ -96,6 +111,109 @@ export default {
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;
+    },
+
+    // 请求获取初始化
+    async initUpdataSpuFormData(spu) {
+      // 函数当中再发4个请求
+      // 获取spu的详情数据
+      try {
+        const result = await this.$API.spu.get(spu.id);
+        this.spuForm = result.data;
+      } catch (error) {
+        this.spuForm = {
+          category3Id: 61,
+          description: "HUAWEI P40",
+          id: 4,
+          spuImageList: null,
+          spuName: "HUAWEI P40",
+        };
+      }
+      // 获取spu的图片列表数据
+      try {
+        const imageList = await this.$API.spu.getSpuImageList(spu.id);
+        this.spuImageList = imageList.data;
+      } catch (error) {
+        this.spuImageList = [
+          {
+            id: 0,
+            imageUrl: "C:/Users/86176/Pictures/bitbug_favicon.icon",
+          },
+        ];
+      }
+      // 获取spu的品牌数据
+      try {
+        const trademarkList = await this.$API.trademark.getList();
+        this.trademarkList = trademarkList;
+      } catch (error) {
+        this.trademarkList = [
+          {
+            id: 0,
+            tmName: "HUAWEI",
+          },
+          {
+            id: 1,
+            tmName: "Apple",
+          },
+          {
+            id: 2,
+            tmName: "OPPO",
+          },
+          {
+            id: 3,
+            tmName: "Red mi",
+          },
+        ];
+      }
+      // 获取所有销售属性数据
+      try {
+        const baseSalseAttrResult = await this.$API.spu.getSalseAttrList();
+        this.baseSalseAttrList = baseSalseAttrResult.data;
+      } catch (error) {
+        this.baseSalseAttrList = [
+          {
+            id: 0,
+          },
+        ];
+      }
+    },
+
+    //
+    async initAddSpuFormData() {
+      try {
+        const trademarkList = await this.$API.trademark.getList();
+        this.trademarkList = trademarkList;
+      } catch (error) {
+        this.trademarkList = [
+          {
+            id: 0,
+            tmName: "HUAWEI",
+          },
+          {
+            id: 1,
+            tmName: "Apple",
+          },
+          {
+            id: 2,
+            tmName: "OPPO",
+          },
+          {
+            id: 3,
+            tmName: "Red mi",
+          },
+        ];
+      }
+      // 获取所有销售属性数据
+      try {
+        const baseSalseAttrResult = await this.$API.spu.getSalseAttrList();
+        this.baseSalseAttrList = baseSalseAttrResult.data;
+      } catch (error) {
+        this.baseSalseAttrList = [
+          {
+            id: 0,
+          },
+        ];
+      }
     },
   },
 };

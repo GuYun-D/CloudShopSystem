@@ -20,6 +20,13 @@ export default {
     }else {
       return request.post('/admin/product/baseTrademark/save', trademark)
     }
+  },
+
+  /**
+   * 获取所有品牌列表
+   */
+  getList(){
+    return request.get('/admin/product/baseTrademark/getTrademarkList')
   }
 }
 

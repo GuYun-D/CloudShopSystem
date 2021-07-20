@@ -77,7 +77,7 @@
       <!-- <div>添加修改页面</div>
       <div>添加sku页面</div> -->
       <SkuForm v-show="isShowSkuForm"></SkuForm>
-      <SpuForm v-show="isShowSpuForm"></SpuForm>
+      <SpuForm ref="spu" v-show="isShowSpuForm" :visible.sync="isShowSpuForm"></SpuForm>
     </el-card>
   </div>
 </template>
@@ -119,15 +119,18 @@ export default {
     // 
     showAddSkuForm(row){
       this.isShowSkuForm = true
+
     },
 
     //
     showUpdataSpuForm(row) {
       this.isShowSpuForm = true;
+      this.$refs.spu.initUpdataSpuFormData(row)
     },
     // 点击添加spu按钮
     showAddSpuForm() {
       this.isShowSpuForm = true;
+      this.$refs.spu.initAddSpuFormData()
     },
     changeCategory({ categoryId, level }) {
       /**
