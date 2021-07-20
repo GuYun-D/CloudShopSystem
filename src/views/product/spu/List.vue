@@ -6,68 +6,91 @@
         @changeCategory="changeCategory"
       ></CategorySelector>
     </el-card>
-
+    <!-- 
+      三页面共用一个card
+      - spu查看页面
+      - 添加修改页面
+      - 添加sku页面
+    -->
     <el-card style="margin-top: 20px" :body-style="{ padding: '20px' }">
-      <el-button type="primary" disabled icon="el-icon-plus">添加spu</el-button>
+      <div v-show="!isShowSpuForm && !isShowSkuForm">
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          @click="showAddSpuForm"
+        >
+          添加spu
+        </el-button>
 
-      <el-table :data="spuList" border style="width: 100%; margin-top: 20px">
-        <el-table-column
-          type="index"
-          label="序号"
-          width="80"
-          align="center"
-        ></el-table-column>
-        <el-table-column prop="spuName" label="SPU名称"></el-table-column>
-        <el-table-column prop="description" label="SPU描述"></el-table-column>
-        <el-table-column label="操作">
-          <template slot-scope="{ row, $index }">
-            <el-button
-              icon="el-icon-plus"
-              type="success"
-              size="mini"
-              @click=""
-            ></el-button>
-            <el-button
-              icon="el-icon-edit"
-              type="primary"
-              size="mini"
-              @click=""
-            ></el-button>
-            <el-button
-              icon="el-icon-warning-outline"
-              type="info"
-              size="mini"
-              @click=""
-            ></el-button>
-            <el-button
-              icon="el-icon-delete"
-              type="danger"
-              size="mini"
-              @click=""
-            ></el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+        <el-table :data="spuList" border style="width: 100%; margin-top: 20px">
+          <el-table-column
+            type="index"
+            label="序号"
+            width="80"
+            align="center"
+          ></el-table-column>
+          <el-table-column prop="spuName" label="SPU名称"></el-table-column>
+          <el-table-column prop="description" label="SPU描述"></el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="{ row, $index }">
+              <el-button
+                icon="el-icon-plus"
+                type="success"
+                size="mini"
+                @click="showAddSkuForm(row)"
+              ></el-button>
+              <el-button
+                icon="el-icon-edit"
+                type="primary"
+                size="mini"
+                @click="showUpdataSpuForm(row)"
+              ></el-button>
+              <el-button
+                icon="el-icon-warning-outline"
+                type="info"
+                size="mini"
+                @click=""
+              ></el-button>
+              <el-button
+                icon="el-icon-delete"
+                type="danger"
+                size="mini"
+                @click=""
+              ></el-button>
+            </template>
+          </el-table-column>
+        </el-table>
 
-      <el-pagination
-        style="text-align: center; margin-top: 10px"
-        :current-page.sync="page"
-        :page-sizes="[5, 10, 15]"
-        :page-size="limit"
-        layout="prev, pager, next, jumper,->,sizes, total"
-        :total="total"
-        background
-      >
-      </el-pagination>
+        <el-pagination
+          style="text-align: center; margin-top: 10px"
+          :current-page.sync="page"
+          :page-sizes="[5, 10, 15]"
+          :page-size="limit"
+          layout="prev, pager, next, jumper,->,sizes, total"
+          :total="total"
+          background
+        >
+        </el-pagination>
+      </div>
+
+      <!-- 避免html结构太多，将下面两个封装成两个组件 -->
+      <!-- <div>添加修改页面</div>
+      <div>添加sku页面</div> -->
+      <SkuForm v-show="isShowSkuForm"></SkuForm>
+      <SpuForm v-show="isShowSpuForm"></SpuForm>
     </el-card>
   </div>
 </template>
 
 <script>
+import SpuForm from "@/views/product/components/SpuForm.vue";
+import SkuForm from "@/views/product/components/SkuForm.vue";
+
 export default {
   name: "spu",
   data() {
     return {
+      // 这个是做三级联动的可操作性的
       isShowList: true,
       category1Id: "",
       category2Id: "",
@@ -76,7 +99,16 @@ export default {
       limit: 5,
       spuList: [],
       total: 0,
+
+      // 切换三个页面的数据
+      isShowSpuForm: false,
+      isShowSkuForm: false,
     };
+  },
+
+  components: {
+    SpuForm,
+    SkuForm,
   },
 
   mounted() {
@@ -84,6 +116,19 @@ export default {
   },
 
   methods: {
+    // 
+    showAddSkuForm(row){
+      this.isShowSkuForm = true
+    },
+
+    //
+    showUpdataSpuForm(row) {
+      this.isShowSpuForm = true;
+    },
+    // 点击添加spu按钮
+    showAddSpuForm() {
+      this.isShowSpuForm = true;
+    },
     changeCategory({ categoryId, level }) {
       /**
        * 将分类id存储起来，以便发送请求
