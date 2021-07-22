@@ -53,7 +53,16 @@
           v-model="spuSaleAttrId"
           placeholder="选择"
         >
-          <el-option value=""> </el-option>
+          <!-- 
+          这里是先获取到总的销售属性，通过数组过滤，将已有的销售属性过滤掉
+         -->
+          <el-option
+            :key="unUseSpuSalseAttr.id"
+            v-for="(unUseSpuSalseAttr, index) in unUseSpuSalseAttrList"
+            :value="unUseSpuSalseAttr.id"
+            :label="unUseSpuSalseAttr.saleAttrName"
+          >
+          </el-option>
         </el-select>
         <el-button type="primary" size="default" icon="el-icon-plus"
           >添加销售属性</el-button
@@ -295,6 +304,23 @@ export default {
         this.baseSalseAttrList = [
           {
             id: 0,
+            saleAttrName: "颜色",
+          },
+          {
+            id: 1,
+            saleAttrName: "内存",
+          },
+          {
+            id: 2,
+            saleAttrName: "款式",
+          },
+          {
+            id: 3,
+            saleAttrName: "品牌",
+          },
+          {
+            id: 4,
+            saleAttrName: "尺寸",
           },
         ];
       }
@@ -336,6 +362,31 @@ export default {
           },
         ];
       }
+    },
+  },
+
+  computed: {
+    // 未使用的销售属性,总的销售属性去掉自己已有的销售属性
+    // unUseSpuSalseAttrList(){
+    //   // 从所有的销售属性列表中去过滤，过滤出销售属性名称和自己的销售属性列表当中的每一个销售属性都不想同的
+    //   return this.baseSalseAttrList.filter((baseSalseAttr, index) => {
+    //     // 从baseSalseAttr拿一项，就要和自己已有的数组每个去对比，如果不相等就拿走，相等就不要
+    //     return this.spuForm.spuSaleAttrList.every(spuSalseAttr => {
+    //       return baseSalseAttr.saleAttrName !== spuSalseAttr.saleAttrName
+    //     })
+    //   })
+    // }
+
+    // 简写
+    unUseSpuSalseAttrList() {
+      // 从所有的销售属性列表中去过滤，过滤出销售属性名称和自己的销售属性列表当中的每一个销售属性都不想同的
+      return this.baseSalseAttrList.filter((baseSalseAttr, index) =>
+        // 从baseSalseAttr拿一项，就要和自己已有的数组每个去对比，如果不相等就拿走，相等就不要
+        this.spuForm.spuSaleAttrList.every(
+          (spuSalseAttr) =>
+            baseSalseAttr.saleAttrName !== spuSalseAttr.saleAttrName
+        )
+      );
     },
   },
 };
