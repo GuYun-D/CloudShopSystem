@@ -39,6 +39,7 @@
           :on-preview="handlePictureCardPreview"
           :on-remove="handleRemove"
           :file-list="spuImageList"
+          :on-success="handleSuccess"
         >
           <i class="el-icon-plus"></i>
         </el-upload>
@@ -51,7 +52,7 @@
         <el-select
           style="margin-right: 10px"
           v-model="spuSaleAttrId"
-          placeholder="选择"
+          :placeholder="unUseSpuSalseAttrList.length > 0 ? `还有${unUseSpuSalseAttrList.length}未选则` : '无选项可选'"
         >
           <!-- 
           这里是先获取到总的销售属性，通过数组过滤，将已有的销售属性过滤掉
@@ -174,12 +175,25 @@ export default {
 
   methods: {
     // 照片墙上传的两个函数
+    // 删除图片成功的回调
     handleRemove(file, fileList) {
-      console.log(file, fileList);
+      // console.log(file, fileList);
+      // 删除成功之后，还剩多少图片就放在filesList上面
+      this.spuImageList = fileList
     },
+    // 预览大图
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;
+    },
+    /**
+     * 图片上传成功的列表
+     * response:上传成功的响应
+     * file上传成功的那张图片的文件
+     * filesList照片墙的所有图片信息,包含了我们自己加上去的name和url
+     */ 
+    handleSuccess(response, file, filesList){
+      this.spuImageList = filesList
     },
 
     // 请求获取初始化
