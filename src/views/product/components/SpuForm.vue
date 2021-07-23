@@ -51,8 +51,12 @@
       <el-form-item label="销售属性" size="normal">
         <el-select
           style="margin-right: 10px"
-          v-model="spuSaleAttrId"
-          :placeholder="unUseSpuSalseAttrList.length > 0 ? `还有${unUseSpuSalseAttrList.length}未选则` : '无选项可选'"
+          v-model="spuSaleAttrIdName"
+          :placeholder="
+            unUseSpuSalseAttrList.length > 0
+              ? `还有${unUseSpuSalseAttrList.length}未选则`
+              : '无选项可选'
+          "
         >
           <!-- 
           这里是先获取到总的销售属性，通过数组过滤，将已有的销售属性过滤掉
@@ -60,12 +64,17 @@
           <el-option
             :key="unUseSpuSalseAttr.id"
             v-for="(unUseSpuSalseAttr, index) in unUseSpuSalseAttrList"
-            :value="unUseSpuSalseAttr.id"
+            :value="`${unUseSpuSalseAttr.id}:${unUseSpuSalseAttr.saleAttrName}`"
             :label="unUseSpuSalseAttr.saleAttrName"
           >
           </el-option>
         </el-select>
-        <el-button type="primary" size="default" icon="el-icon-plus"
+        <el-button
+          @click="addSalseAttr"
+          type="primary"
+          size="default"
+          icon="el-icon-plus"
+          :disabled="!spuSaleAttrIdName"
           >添加销售属性</el-button
         >
 
@@ -110,6 +119,7 @@
                 v-model="row.inputValue"
                 ref="saveTagInput"
                 size="small"
+                placeholder="输入属性"
               >
               </el-input>
               <!--  @click="showInput"点击转换成编辑模式 -->
@@ -117,14 +127,14 @@
                 v-else
                 class="button-new-tag"
                 size="small"
-                @click="showInput"
+                @click="showInput(row, $index)"
                 >+ 添加</el-button
               >
             </template>
           </el-table-column>
           <el-table-column label="操作" width="150">
             <template slot-scope="{ row, $index }">
-              <el-button type="danger" size="mini" @click="">删除</el-button>
+              <el-button type="danger" size="mini">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -151,13 +161,14 @@ export default {
         description: "",
         tmId: "",
         spuImageList: [],
+        spuSaleAttrList: {},
       },
 
       dialogImageUrl: "",
       dialogVisible: false,
 
       //
-      spuSaleAttrId: "",
+      spuSaleAttrIdName: "",
 
       // 将获取到图片列表先单独保存，最后再整合到spuForm中去
       spuImageList: [],
@@ -174,12 +185,44 @@ export default {
   },
 
   methods: {
+    /**
+     * tag事件
+     */
+    // handleClose(tag) {
+    //   this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+    // },
+
+    // 点击tag添加按钮
+    showInput(row, index) {
+      // 显示当前行的input
+      this.$set(row, "inputVisible", true);
+      // 自动获取焦点
+      this.$nextTick(() => {
+        this.$refs.saveTagInput.focus();
+      });
+    },
+
+    // 点击添加销售属性
+    addSalseAttr() {
+      // 把刚才收集到的数据构造成目标对象，把这个对象添加到指定的位置spuForm.
+      // {baseAttrId: 0, salseAttrName: "", spuSaleAttrValueList: []}
+      let [baseAttrId, salseAttrName] = this.spuSaleAttrIdName.split(":");
+      let obj = {
+        baseAttrId,
+        salseAttrName,
+        spuSaleAttrValueList: [],
+      };
+
+      this.spuForm.spuSaleAttrList.push(obj);
+      // 清空select
+      this.spuSaleAttrIdName = "";
+    },
     // 照片墙上传的两个函数
     // 删除图片成功的回调
     handleRemove(file, fileList) {
       // console.log(file, fileList);
       // 删除成功之后，还剩多少图片就放在filesList上面
-      this.spuImageList = fileList
+      this.spuImageList = fileList;
     },
     // 预览大图
     handlePictureCardPreview(file) {
@@ -191,9 +234,9 @@ export default {
      * response:上传成功的响应
      * file上传成功的那张图片的文件
      * filesList照片墙的所有图片信息,包含了我们自己加上去的name和url
-     */ 
-    handleSuccess(response, file, filesList){
-      this.spuImageList = filesList
+     */
+    handleSuccess(response, file, filesList) {
+      this.spuImageList = filesList;
     },
 
     // 请求获取初始化
