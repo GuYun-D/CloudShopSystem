@@ -99,6 +99,7 @@
                 closable
                 :disable-transitions="false"
                 v-for="(spuSalseAttrValue, index) in row.spuSaleAttrValueList"
+                @close="row.spuSaleAttrValueList.splice(index, 1)"
               >
                 {{ spuSalseAttrValue.salseAttrValueName }}
               </el-tag>
@@ -134,7 +135,7 @@
           </el-table-column>
           <el-table-column label="操作" width="150">
             <template slot-scope="{ row, $index }">
-              <el-button type="danger" size="mini">删除</el-button>
+              <el-button type="danger" size="mini" @click="spuForm.spuSaleAttrList.splice($index, 1)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
