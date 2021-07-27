@@ -72,7 +72,7 @@
       <!-- 避免html结构太多，将下面两个封装成两个组件 -->
       <!-- <div>添加修改页面</div>
       <div>添加sku页面</div> -->
-      <SkuForm v-show="isShowSkuForm"></SkuForm>
+      <SkuForm ref="sku" :visible.sync="isShowSkuForm" v-show="isShowSkuForm"></SkuForm>
       <SpuForm
         @cancelBack="cancelBack"
         @successBack="successBack"
@@ -150,9 +150,10 @@ export default {
       this.flag = null;
     },
 
-    //
+    //点击添加sku
     showAddSkuForm(row) {
       this.isShowSkuForm = true;
+      this.$refs.sku.initAddSkuFormData(row)
     },
 
     // 修改数据
@@ -163,9 +164,9 @@ export default {
       this.$refs.spu.initUpdataSpuFormData(row);
     },
     // 点击添加spu按钮
-    showAddSpuForm() {
+    showAddSpuForm(row) {
       this.isShowSpuForm = true;
-      this.$refs.spu.initAddSpuFormData(this.category3Id);
+      this.$refs.spu.initAddSpuFormData(row, this.category1Id, this.category2Id);
     },
     changeCategory({ categoryId, level }) {
       /**
