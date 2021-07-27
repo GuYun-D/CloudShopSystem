@@ -146,7 +146,7 @@
         </el-table>
 
         <el-button type="primary" size="default" @click="save">保存</el-button>
-        <el-button size="default" @click="$emit('update:visible', false)"
+        <el-button size="default" @click="canaelBack"
           >取消</el-button
         >
       </el-form-item>
@@ -193,6 +193,16 @@ export default {
   },
 
   methods: {
+    // 取消操作
+    canaelBack(){
+      // 返回到父组件
+      this.$emit('updata:visible', false)
+      // 通知父组件干活，清空标识数据flag
+      this.$emit('cancelBack')
+      // 重置组件的数据
+      this.resetData()
+    },
+
     // 保存操作
     async save() {
       // 获取收集的参数数据
