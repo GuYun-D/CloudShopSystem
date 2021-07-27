@@ -135,12 +135,17 @@
           </el-table-column>
           <el-table-column label="操作" width="150">
             <template slot-scope="{ row, $index }">
-              <el-button type="danger" size="mini" @click="spuForm.spuSaleAttrList.splice($index, 1)">删除</el-button>
+              <el-button
+                type="danger"
+                size="mini"
+                @click="spuForm.spuSaleAttrList.splice($index, 1)"
+                >删除</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
 
-        <el-button type="primary" size="default">保存</el-button>
+        <el-button type="primary" size="default" @click="save">保存</el-button>
         <el-button size="default" @click="$emit('update:visible', false)"
           >取消</el-button
         >
@@ -165,6 +170,8 @@ export default {
         spuSaleAttrList: {},
       },
 
+      category3Id: "",
+
       dialogImageUrl: "",
       dialogVisible: false,
 
@@ -186,6 +193,65 @@ export default {
   },
 
   methods: {
+    // 保存操作
+    async save() {
+      // 获取收集的参数数据
+      let { spuForm, spuImageList, category3Id } = this;
+      // 整理参数，图片的格式
+      spuForm.spuImageList = spuImageList.map((item) => {
+        return {
+          imageName: item.name,
+          imageUrl: item.imageUrl || item.response.data,
+        };
+      });
+
+      // 整理收集category3Id
+      spuForm.category3Id = category3Id;
+
+      // 整理删除属性当中的inputVisible和inputValue
+      spuForm.spuSaleAttrList.forEach((item) => {
+        delete item.inputVisible;
+        delete item.inputValue;
+      });
+
+      // 发请求
+      try {
+        await this.$API.spu.addUpdata(spuForm);
+        // 提示成功
+        this.$message.success("保存成功")
+        // 返回列表页
+        $emit('update:visible', false)
+        // 通知父组件，父组件需要做一些事情，重新请求数据
+        this.$emit('successBack')
+        // 清空当前组件里面的数据全部清掉
+        this.resetData()
+      } catch (error) {
+        this.$message.error("保存失败")
+      }
+      // 成功
+      // 失败
+    },
+
+    // 清空data的数据
+    resetData(){
+       this.spuForm = {
+        spuName: "",
+        category3Id: "",
+        description: "",
+        tmId: "",
+        spuImageList: [],
+        spuSaleAttrList: {},
+      }
+      this.category3Id = ""
+      this.dialogImageUrl = ""
+      this.dialogVisible = false
+      this.spuSaleAttrIdName = ""
+      this.spuImageList = []
+      this.trademarkList = []
+      this.baseSalseAttrList = []
+      this.inputVisible = true
+    },
+
     /**
      * tag事件
      */
@@ -242,6 +308,7 @@ export default {
 
     // 请求获取初始化
     async initUpdataSpuFormData(spu) {
+      this.category3Id = spu.category3Id;
       // 函数当中再发4个请求
       // 获取spu的详情数据
       try {
@@ -385,7 +452,8 @@ export default {
     },
 
     //
-    async initAddSpuFormData() {
+    async initAddSpuFormData(category3Id) {
+      this.category3Id = category3Id;
       try {
         const trademarkList = await this.$API.trademark.getList();
         this.trademarkList = trademarkList;

@@ -77,7 +77,7 @@
       <!-- <div>添加修改页面</div>
       <div>添加sku页面</div> -->
       <SkuForm v-show="isShowSkuForm"></SkuForm>
-      <SpuForm ref="spu" v-show="isShowSpuForm" :visible.sync="isShowSpuForm"></SpuForm>
+      <SpuForm @successBack="successBack" ref="spu" v-show="isShowSpuForm" :visible.sync="isShowSpuForm"></SpuForm>
     </el-card>
   </div>
 </template>
@@ -116,21 +116,39 @@ export default {
   },
 
   methods: {
+    // 成功返回的方法，让父组件干活
+    successBack(){
+      // 发请求重新获取数据，得弄清楚是修改成功返回的还是添加成功返回的，因为请求的页码不一样
+      // 根据flag判断
+      if(this.flag){
+        // 修改回来的
+        this.getSpuList(this.page)
+      }else {
+        // 添加回来的
+        this.getSpuList()
+      }
+
+      // 数据获取成功之后，清除flag
+      this.flag = null
+    },
+
     // 
     showAddSkuForm(row){
       this.isShowSkuForm = true
 
     },
 
-    //
+    // 修改数据
     showUpdataSpuForm(row) {
+      // 为了确定successBack是哪一种成功回来的，所以在修改数据的时候为this添加一个spuId
+      this.flag = row.id
       this.isShowSpuForm = true;
       this.$refs.spu.initUpdataSpuFormData(row)
     },
     // 点击添加spu按钮
     showAddSpuForm() {
       this.isShowSpuForm = true;
-      this.$refs.spu.initAddSpuFormData()
+      this.$refs.spu.initAddSpuFormData(this.category3Id)
     },
     changeCategory({ categoryId, level }) {
       /**
